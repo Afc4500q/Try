@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>تفاصيل المنتج</title>
+</head>
+<body>
+    <header>تفاصيل المنتج</header>
+    <div class="container">
+        <a href="index.html" class="back-link">العودة</a>
+        <div id="product-detail" class="product-details">
+            <!-- محتوى تفاصيل المنتج سيتم إضافته هنا ديناميكياً -->
+        </div>
+        <button id="save-image" class="btn" onclick="saveImage()">حفظ الصورة</button>
+        <button id="add-to-cart" class="btn" onclick="openn()">إضافة إلى السلة</button>
+        <div class="list-bay">
+            <label for="pricebay">بكم سوف تبيع المنتج</label>
+            <input type="number" id="pricebay">
+            <button id="sump" class="btn" onclick="addToCart()">موافق</button>
+        </div>
+    </div>
+    <script>
+        const productId = localStorage.getItem('selectedProductId');
+        const listbay = document.querySelector(".list-bay");
+
+        if (productId) {
+            fetch(`https://673a0d78a3a36b5a62f0945e.mockapi.io/products/api/products/${productId}`)
+                .then(response => response.json())
+                .then(product => {
+                    const productDetail = document.getElementById('product-detail');
+                    const images = product.images.map((image, index) => {
+                        return `<img src="${image}" alt="product image" class="product-image">`;
+                    }).join('');
+
+                    productDetail.innerHTML = `
+                        <div class="product-images">${images}</div>
+                        <h2>${product.name}</h2>
+                        <div class="price-container">
+                            <span class="price-label">السعر الأعلى:</span>
+                            <span class="price-value">${product.maxprice} دينار عراقي</span>
+                        </div>
+                        <div class="price-container">
+                            <span class="price-label">السعر الأدنى:</span>
+                            <span class="price-value">${product.minprice} دينار عراقي</span>
+                        </div>
+                        <div class="note">${product.discount}</div>
+                        <div class="description">${product.description}</div>
+                        <div class="status">حالة المنتج: ${product.condition}</div>
+                    `;
+
+                    window.openn = function() {
+                        document.querySelector(".list-bay").style.display = "block";
+                    };
+                    
+                    window.addToCart = function() {
+                        const pricebsy = document.querySelector("#pricebay").value;
+                        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                        cart.push({
+                            id: product.id,
+                            name: product.name,
+                            minprice: product.minprice,
+                            maxprice: product.maxprice,
+                            images: product.images,
+                            pricebsy: pricebsy
+                        });
+                        
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        listbay.style.display = "none";
+                        alert('تم إضافة المنتج إلى السلة');
+                    };
+
+                    document.getElementById('save-image').onclick = () => {
+                        const currentImage = product.images[0];
+                        saveImage(currentImage);
+                    };
+                })
+                .catch(error => console.error('خطأ في جلب بيانات المنتج:', error));
+        } else {
+            alert('المنتج غير موجود!');
+        }
+
+        function saveImage(imageUrl) {
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.download = 'downloaded-image.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            alert('تم حفظ الصورة');
+        }
+    </script>
+</body>
+</html>
