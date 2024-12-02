@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>عرض المنتجات</title>
+</head>
+<body>
+    <header>عرض المنتجات</header>
+    <div class="container">
+        <div id="products-list" class="products-list">
+            <!-- المنتجات سيتم تحميلها هنا ديناميكياً -->
+        </div>
+    </div>
+    <script>
+        fetch('https://673a0d78a3a36b5a62f0945e.mockapi.io/products/api/products')
+            .then(response => response.json())
+            .then(products => {
+                const productsList = document.getElementById('products-list');
+                products.forEach(product => {
+                    const productCard = document.createElement('div');
+                    productCard.className = 'product-card';
+                    productCard.innerHTML = `
+                        <img src="${product.images[0]}" alt="${product.name}" class="product-image">
+                        <h2 class="product-name">${product.name}</h2>
+                        <p class="product-price">السعر: ${product.minprice} - ${product.maxprice} دينار عراقي</p>
+                        <button onclick="viewProduct(${product.id})" class="btn">عرض التفاصيل</button>
+                    `;
+                    productsList.appendChild(productCard);
+                });
+            });
+
+        function viewProduct(productId) {
+            localStorage.setItem('selectedProductId', productId);
+            window.location.href = 'product.html';
+        }
+    </script>
+</body>
+</html>
