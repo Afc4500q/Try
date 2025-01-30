@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تعديل المنتجات</title>
+</head>
+<body>
+    <h2>تعديل المنتجات</h2>
+
+    <label for="userId">أدخل ID المستخدم:</label>
+    <input type="number" id="userId">
+    <button onclick="fetchUserProducts()">جلب المنتجات</button>
+
+    <div id="productsContainer"></div>
+
+    <button onclick="updateProducts()">تحديث البيانات</button>
+    <p id="message"></p>
+
+    <script>
+        let userProducts = []; // لتخزين المنتجات مؤقتًا
+
+        async function fetchUserProducts() {
+            const userId = document.getElementById("userId").value;
+            const productsContainer = document.getElementById("productsContainer");
+            const message = document.getElementById("message");
+
+            if (!userId) {
+                message.textContent = "يرجى إدخال ID المستخدم!";
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://679353885eae7e5c4d8e46e3.mockapi.io/Yo/${userId}`);
+                if (!response.ok) throw new Error("المستخدم غير موجود!");
+                const userData = await response.json();
+
+                userProducts = userData.products || [];
+                if (userProducts.length === 0) {
+                    message.textContent = "لا توجد منتجات لهذا المستخدم!";
+                    productsContainer.innerHTML = "";
+                    return;
+                }
+
+                displayProducts(); // تحديث عرض المنتجات
+                message.textContent = "تم جلب المنتجات بنجاح!";
+            } catch (error) {
+                message.textContent = `خطأ: ${error.message}`;
+            }
+        }
+
+        function displayProducts() {
+            const productsContainer = document.getElementById("productsContainer");
+            productsContainer.innerHTML = "";
+
+            userProducts.forEach((product, index) => {
+                productsContainer.innerHTML += `
+                    <div id="product-${index}" style="border: 1px solid black; padding: 10px; margin: 10px;">
+                        <p><strong>ID المنتج:</strong> ${product.id}</p>
+                        <label>الاسم:</label>
+                        <input type="text" id="name-${index}" value="${product.name}">
+                        <br>
+
+                        <label>السعر:</label>
+                        <input type="number" id="price-${index}" value="${product.price}">
+                        <br>
+
+                        <label>الولاية:</label>
+                        <input type="text" id="state-${index}" value="${product.state}">
+                        <br>
+
+                        <label>المدينة:</label>
+                        <input type="text" id="city-${index}" value="${product.city}">
+                        <br>
+
+                        <label>المنطقة:</label>
+                        <input type="text" id="area-${index}" value="${product.area}">
+                        <br>
+
+                        <label>الحالة:</label>
+                        <select id="status-${index}">
+                            <option value="قيد الشحن" ${product.status === "قيد الشحن" ? "selected" : ""}>قيد الشحن</option>
+                            <option value="قيد المراجعة" ${product.status === "قيد المراجعة" ? "selected" : ""}>قيد المراجعة</option>
+                            <option value="تم التسليم" ${product.status === "تم التسليم" ? "selected" : ""}>تم التسليم</option>
+                            <option value="تم الرفض" ${product.status === "تم الرفض" ? "selected" : ""}>تم الرفض</option>
+                        </select>
+                        <br>
+
+                        <label>النوع:</label>
+                        <input type="text" id="type-${index}" value="${product.type}">
+                        <br>
+
+                        <button onclick="deleteProduct(${index})" style="color: red;">حذف المنتج</button>
+                    </div>
+                `;
+            });
+        }
+
+        async function deleteProduct(index) {
+            if (!confirm("هل أنت متأكد أنك تريد حذف هذا المنتج؟")) return;
+
+            userProducts.splice(index, 1); // حذف المنتج من المصفوفة
+            displayProducts(); // تحديث الواجهة بدون المنتج المحذوف
+
+            // تحديث API بعد الحذف
+            const userId = document.getElementById("userId").value;
+            const message = document.getElementById("message");
+
+            try {
+                const updateResponse = await fetch(`https://679353885eae7e5c4d8e46e3.mockapi.io/Yo/${userId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ products: userProducts })
+                });
+
+                if (updateResponse.ok) {
+                    message.textContent = "تم حذف المنتج بنجاح!";
+                } else {
+                    throw new Error("فشل في تحديث البيانات بعد الحذف!");
+                }
+            } catch (error) {
+                message.textContent = `خطأ: ${error.message}`;
+            }
+        }
+
+        async function updateProducts() {
+            const userId = document.getElementById("userId").value;
+            const message = document.getElementById("message");
+
+            if (!userId) {
+                message.textContent = "يرجى إدخال ID المستخدم!";
+                return;
+            }
+
+            try {
+                let updatedProducts = userProducts.map((product, index) => ({
+                    id: product.id,
+                    name: document.getElementById(`name-${index}`).value,
+                    price: parseFloat(document.getElementById(`price-${index}`).value),
+                    state: document.getElementById(`state-${index}`).value,
+                    city: document.getElementById(`city-${index}`).value,
+                    area: document.getElementById(`area-${index}`).value,
+                    status: document.getElementById(`status-${index}`).value,
+                    type: document.getElementById(`type-${index}`).value
+                }));
+
+                // إرسال البيانات المحدثة إلى API
+                const updateResponse = await fetch(`https://679353885eae7e5c4d8e46e3.mockapi.io/Yo/${userId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ products: updatedProducts })
+                });
+
+                if (updateResponse.ok) {
+                    message.textContent = "تم تحديث المنتجات بنجاح!";
+                } else {
+                    throw new Error("فشل في تحديث البيانات!");
+                }
+            } catch (error) {
+                message.textContent = `خطأ: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
