@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة منتجات للمستخدم</title>
+</head>
+<body>
+    <h2>إضافة منتج جديد للمستخدم</h2>
+
+    <label for="userId">ID المستخدم:</label>
+    <input type="number" id="userId" required>
+    <br><br>
+
+    <label for="productName">اسم المنتج:</label>
+    <input type="text" id="productName" required>
+    <br><br>
+
+    <label for="productPrice">سعر المنتج:</label>
+    <input type="number" id="productPrice" required>
+    <br><br>
+
+    <label for="state">الولاية:</label>
+    <input type="text" id="state" required>
+    <br><br>
+
+    <label for="city">المدينة:</label>
+    <input type="text" id="city" required>
+    <br><br>
+
+    <label for="area">المنطقة:</label>
+    <input type="text" id="area" required>
+    <br><br>
+
+    <label for="status">الحالة:</label>
+    <select id="status" required>
+        <option value="قيد الشحن">قيد الشحن</option>
+        <option value="قيد المراجعة">قيد المراجعة</option>
+        <option value="تم التسليم">تم التسليم</option>
+        <option value="تم الرفض">تم الرفض</option>
+    </select>
+    <br><br>
+
+    <label for="type">النوع:</label>
+    <input type="text" id="type" required>
+    <br><br>
+
+    <button onclick="addProduct()">إضافة المنتج</button>
+
+    <p id="message"></p>
+
+    <script>
+        async function addProduct() {
+            const userId = document.getElementById("userId").value;
+            const productName = document.getElementById("productName").value;
+            const productPrice = document.getElementById("productPrice").value;
+            const state = document.getElementById("state").value;
+            const city = document.getElementById("city").value;
+            const area = document.getElementById("area").value;
+            const status = document.getElementById("status").value;
+            const type = document.getElementById("type").value;
+            const message = document.getElementById("message");
+
+            if (!userId || !productName || !productPrice || !state || !city || !area || !status || !type) {
+                message.textContent = "الرجاء إدخال جميع البيانات!";
+                return;
+            }
+
+            try {
+                // جلب بيانات المستخدم
+                const userResponse = await fetch(`https://679353885eae7e5c4d8e46e3.mockapi.io/Yo/${userId}`);
+                if (!userResponse.ok) throw new Error("المستخدم غير موجود!");
+                const userData = await userResponse.json();
+
+                // جلب المنتجات الحالية أو إنشاء قائمة جديدة
+                let products = userData.products || [];
+
+                // توليد ID تلقائي للمنتج الجديد
+                const newProductId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+
+                // إنشاء كائن المنتج الجديد
+                const newProduct = {
+                    id: newProductId, // ID المنتج يتم توليده تلقائيًا
+                    name: productName,
+                    price: parseFloat(productPrice),
+                    state: state,
+                    city: city,
+                    area: area,
+                    status: status,
+                    type: type
+                };
+
+                // إضافة المنتج إلى القائمة
+                products.push(newProduct);
+
+                // تحديث بيانات المستخدم مع المنتجات الجديدة
+                const updateResponse = await fetch(`https://679353885eae7e5c4d8e46e3.mockapi.io/Yo/${userId}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ products })
+                });
+
+                if (updateResponse.ok) {
+                    message.textContent = "تمت إضافة المنتج بنجاح!";
+                } else {
+                    throw new Error("فشل في تحديث البيانات!");
+                }
+            } catch (error) {
+                message.textContent = `خطأ: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
