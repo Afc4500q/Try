@@ -3,38 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
-    <title>عرض المنتجات</title>
+    <title>تسجيل الدخول</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #dashboard {
+            display: none; /* إخفاء الخيارات حتى يتم تسجيل الدخول */
+        }
+    </style>
 </head>
 <body>
-    <header>عرض المنتجات</header>
-    <div class="container">
-        <div id="products-list" class="products-list">
-            <!-- المنتجات سيتم تحميلها هنا ديناميكياً -->
-        </div>
-    </div>
-    <script>
-        fetch('https://673a0d78a3a36b5a62f0945e.mockapi.io/products/api/products')
-            .then(response => response.json())
-            .then(products => {
-                const productsList = document.getElementById('products-list');
-                products.forEach(product => {
-                    const productCard = document.createElement('div');
-                    productCard.className = 'product-card';
-                    productCard.innerHTML = `
-                        <img src="${product.images[0]}" alt="${product.name}" class="product-image">
-                        <h2 class="product-name">${product.name}</h2>
-                        <p class="product-price">السعر: ${product.minprice} - ${product.maxprice} دينار عراقي</p>
-                        <button onclick="viewProduct(${product.id})" class="btn">عرض التفاصيل</button>
-                    `;
-                    productsList.appendChild(productCard);
-                });
-            });
 
-        function viewProduct(productId) {
-            localStorage.setItem('selectedProductId', productId);
-            window.location.href = 'product.html';
+    <!-- نموذج تسجيل الدخول -->
+    <div id="loginForm">
+        <h2>تسجيل الدخول</h2>
+        <label for="username">اسم المستخدم:</label>
+        <input type="text" id="username">
+        <br>
+
+        <label for="password">كلمة المرور:</label>
+        <input type="password" id="password">
+        <br>
+
+        <button onclick="login()">تسجيل الدخول</button>
+        <p id="message" style="color: red;"></p>
+    </div>
+
+    <!-- لوحة التحكم بعد تسجيل الدخول -->
+    <div id="dashboard">
+        <h2>مرحبًا بك، Hayder45!</h2>
+        <button onclick="window.location.href='gffgfyguudydariitert.html'">إضافة منتج</button>
+        <button onclick="window.location.href='htiidorieorhridhdjdjd.html'">تعديل منتج</button>
+        <br><br>
+        <button onclick="logout()">تسجيل الخروج</button>
+    </div>
+
+    <script>
+        function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const message = document.getElementById("message");
+
+            if (username === "Hayder45" && password === "HA45@@ha") {
+                // إخفاء نموذج تسجيل الدخول وإظهار لوحة التحكم
+                document.getElementById("loginForm").style.display = "none";
+                document.getElementById("dashboard").style.display = "block";
+
+                // تخزين حالة تسجيل الدخول في localStorage
+                localStorage.setItem("isLoggedIn", "true");
+            } else {
+                message.textContent = "اسم المستخدم أو كلمة المرور غير صحيحة!";
+            }
         }
+
+        function logout() {
+            // تسجيل الخروج
+            localStorage.removeItem("isLoggedIn");
+            document.getElementById("loginForm").style.display = "block";
+            document.getElementById("dashboard").style.display = "none";
+        }
+
+        // عند تحميل الصفحة، التحقق مما إذا كان المستخدم مسجل دخول مسبقًا
+        window.onload = function() {
+            if (localStorage.getItem("isLoggedIn") === "true") {
+                document.getElementById("loginForm").style.display = "none";
+                document.getElementById("dashboard").style.display = "block";
+            }
+        };
     </script>
+
 </body>
 </html>
