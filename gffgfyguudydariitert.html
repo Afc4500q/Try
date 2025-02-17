@@ -68,7 +68,7 @@
 
             try {
                 // جلب بيانات المستخدم
-                const userResponse = await fetch(`https://679353885eae7e5c4d8e46e3.mockapi.io/Yo/${userId}`);
+                const userResponse = await fetch(`https://673a394a339a4ce445179ae7.mockapi.io/User/${userId}`);
                 if (!userResponse.ok) throw new Error("المستخدم غير موجود!");
                 const userData = await userResponse.json();
 
@@ -94,7 +94,7 @@
                 products.push(newProduct);
 
                 // تحديث بيانات المستخدم مع المنتجات الجديدة
-                const updateResponse = await fetch(`https://679353885eae7e5c4d8e46e3.mockapi.io/Yo/${userId}`, {
+                const updateResponse = await fetch(`https://673a394a339a4ce445179ae7.mockapi.io/User/${userId}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ products })
