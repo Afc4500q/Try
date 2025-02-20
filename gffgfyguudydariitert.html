@@ -31,6 +31,9 @@
     <label for="area">المنطقة:</label>
     <input type="text" id="area" required>
     <br><br>
+      <label for="phone">رقم الهاتف:</label>
+    <input type="Number" id="phone" required>
+    <br><br>
 
     <label for="status">الحالة:</label>
     <select id="status" required>
@@ -57,11 +60,12 @@
             const state = document.getElementById("state").value;
             const city = document.getElementById("city").value;
             const area = document.getElementById("area").value;
+            const phone = document.getElementById("phone").value;
             const status = document.getElementById("status").value;
             const type = document.getElementById("type").value;
             const message = document.getElementById("message");
 
-            if (!userId || !productName || !productPrice || !state || !city || !area || !status || !type) {
+            if (!userId || !productName || !productPrice || !state || !city || !area || !phone || !status || !type) {
                 message.textContent = "الرجاء إدخال جميع البيانات!";
                 return;
             }
@@ -80,12 +84,13 @@
 
                 // إنشاء كائن المنتج الجديد
                 const newProduct = {
-                    id: newProductId, // ID المنتج يتم توليده تلقائيًا
+                    id: 11+newProductId, // ID المنتج يتم توليده تلقائيًا
                     name: productName,
                     price: parseFloat(productPrice),
                     state: state,
                     city: city,
                     area: area,
+                    phone: phone,
                     status: status,
                     type: type
                 };
