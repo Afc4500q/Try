@@ -18,148 +18,224 @@
     <p id="message"></p>
 
     <script>
-        let userProducts = []; // لتخزين المنتجات مؤقتًا
+        // التحقق من الجلسة والمتغيرات العامة
+const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+if (!currentUser) window.location.href = "login.html";
+let productsData = [];
 
-        async function fetchUserProducts() {
-            const userId = document.getElementById("userId").value;
-            const productsContainer = document.getElementById("productsContainer");
-            const message = document.getElementById("message");
+// تحميل البيانات الأولية
+document.addEventListener("DOMContentLoaded", () => {
+    loadDashboard();
+    initializeEventListeners();
+});
 
-            if (!userId) {
-                message.textContent = "يرجى إدخال ID المستخدم!";
-                return;
-            }
+async function loadDashboard() {
+    try {
+        const response = await fetch(`https://673a394a339a4ce445179ae7.mockapi.io/User/${currentUser.id}?_=${Date.now()}`);
+        const data = await response.json();
+        
+        productsData = data.products || [];
+        updateDashboardUI(data);
+    } catch (error) {
+        showError("فشل في تحميل البيانات", error);
+    }
+}
 
-            try {
-                const response = await fetch(`https://673a394a339a4ce445179ae7.mockapi.io/User/${userId}`);
-                if (!response.ok) throw new Error("المستخدم غير موجود!");
-                const userData = await response.json();
+function updateDashboardUI(data) {
+    updateUserInfo(data);
+    updateStats(data);
+    renderProducts();
+}
 
-                userProducts = userData.products || [];
-                if (userProducts.length === 0) {
-                    message.textContent = "لا توجد منتجات لهذا المستخدم!";
-                    productsContainer.innerHTML = "";
-                    return;
-                }
+// تحديث واجهة المستخدم
+function updateUserInfo(data) {
+    document.getElementById("user-info").innerHTML = `
+        <div class="col-md-4 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <h5><i class="fas fa-user text-primary"></i> الاسم</h5>
+                    <h2>${data.name}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <h5><i class="fas fa-at text-success"></i> اسم المستخدم</h5>
+                    <h2>${data.user}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card stat-card h-100">
+                <div class="card-body">
+                    <h5><i class="fas fa-wallet text-danger"></i> الرصيد</h5>
+                    <h2>${data.total} IQD</h2>
+                </div>
+            </div>
+        </div>`;
+}
 
-                displayProducts(); // تحديث عرض المنتجات
-                message.textContent = "تم جلب المنتجات بنجاح!";
-            } catch (error) {
-                message.textContent = `خطأ: ${error.message}`;
-            }
-        }
+function updateStats(data) {
+    document.getElementById("stats").innerHTML = `
+        <div class="col mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <h5>الطلبات الكلية</h5>
+                    <h1>${data.total}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h5>الطلبات الناجحة</h5>
+                    <h1>${data.successful}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col mb-3">
+            <div class="card bg-warning text-white h-100">
+                <div class="card-body">
+                    <h5>الطلبات المعلقة</h5>
+                    <h1>${data.pending}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col mb-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <h5>الطلبات المرفوضة</h5>
+                    <h1>${data.rejected}</h1>
+                </div>
+            </div>
+        </div>`;
+}
 
-        function displayProducts() {
-            const productsContainer = document.getElementById("productsContainer");
-            productsContainer.innerHTML = "";
-
-            userProducts.forEach((product, index) => {
-                productsContainer.innerHTML += `
-                    <div id="product-${index}" style="border: 1px solid black; padding: 10px; margin: 10px;">
-                        <p><strong>ID المنتج:</strong> ${product.id}</p>
-                        <label>الاسم:</label>
-                        <input type="text" id="name-${index}" value="${product.name}">
-                        <br>
-
-                        <label>السعر:</label>
-                        <input type="number" id="price-${index}" value="${product.price}">
-                        <br>
-
-                        <label>الولاية:</label>
-                        <input type="text" id="state-${index}" value="${product.state}">
-                        <br>
-
-                        <label>المدينة:</label>
-                        <input type="text" id="city-${index}" value="${product.city}">
-                        <br>
-
-                        <label>المنطقة:</label>
-                        <input type="text" id="area-${index}" value="${product.area}">
-                        <br>
-
-                        <label>الحالة:</label>
-                        <select id="status-${index}">
-                            <option value="قيد الشحن" ${product.status === "قيد الشحن" ? "selected" : ""}>قيد الشحن</option>
-                            <option value="قيد المراجعة" ${product.status === "قيد المراجعة" ? "selected" : ""}>قيد المراجعة</option>
-                            <option value="تم التسليم" ${product.status === "تم التسليم" ? "selected" : ""}>تم التسليم</option>
-                            <option value="تم الرفض" ${product.status === "تم الرفض" ? "selected" : ""}>تم الرفض</option>
-                        </select>
-                        <br>
-
-                        <label>النوع:</label>
-                        <input type="text" id="type-${index}" value="${product.type}">
-                        <br>
-
-                        <button onclick="deleteProduct(${index})" style="color: red;">حذف المنتج</button>
+// إدارة المنتجات
+function renderProducts() {
+    const productsList = document.getElementById("products-list");
+    productsList.innerHTML = productsData.map((product, index) => `
+        <div class="col-md-4 mb-3">
+            <div class="card product-card h-100">
+                <div class="card-body">
+                    <h5><i class="fas fa-cube"></i> ${product.name}</h5>
+                    <p><small>السعر: ${product.price} IQD</small></p>
+                    <p><small><i class="fas fa-map-marker-alt"></i> المنطقة: ${product.region || "غير متوفر"}</small></p>
+                    <p><small><i class="fas fa-city"></i> المدينة: ${product.city || "غير متوفر"}</small></p>
+                    <p><small><i class="fas fa-phone"></i> ${product.phone || "غير متوفر"}</small></p>
+                    <div class="d-flex gap-2 mt-3">
+                        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${index})">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="openEditModal(${index})">
+                            <i class="fas fa-edit"></i> تعديل
+                        </button>
                     </div>
-                `;
-            });
-        }
+                </div>
+            </div>
+        </div>`
+    ).join("");
+}
 
-        async function deleteProduct(index) {
-            if (!confirm("هل أنت متأكد أنك تريد حذف هذا المنتج؟")) return;
+// إدارة الحذف
+async function deleteProduct(index) {
+    if (!confirm("هل أنت متأكد من حذف هذا المنتج؟")) return;
 
-            userProducts.splice(index, 1); // حذف المنتج من المصفوفة
-            displayProducts(); // تحديث الواجهة بدون المنتج المحذوف
+    try {
+        productsData.splice(index, 1);
+        await updateUserData();
+        renderProducts();
+        showSuccess("تم الحذف بنجاح!");
+    } catch (error) {
+        handleError("حدث خطأ أثناء الحذف:", error);
+    }
+}
 
-            // تحديث API بعد الحذف
-            const userId = document.getElementById("userId").value;
-            const message = document.getElementById("message");
+// إدارة التعديل
+function openEditModal(index) {
+    const product = productsData[index];
+    if (!product) return alert('المنتج غير موجود');
 
-            try {
-                const updateResponse = await fetch(`https://673a394a339a4ce445179ae7.mockapi.io/User/${userId}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ products: userProducts })
-                });
+    document.getElementById("editProductIndex").value = index;
+    document.getElementById("editName").value = product.name;
+    document.getElementById("editPrice").value = product.price;
+    document.getElementById("editRegion").value = product.region || "";
+    document.getElementById("editCity").value = product.city || "";
+    document.getElementById("editState").value = product.state || "";
+    document.getElementById("editPhone").value = product.phone || "";
 
-                if (updateResponse.ok) {
-                    message.textContent = "تم حذف المنتج بنجاح!";
-                } else {
-                    throw new Error("فشل في تحديث البيانات بعد الحذف!");
-                }
-            } catch (error) {
-                message.textContent = `خطأ: ${error.message}`;
-            }
-        }
+    new bootstrap.Modal(document.getElementById("editModal")).show();
+}
 
-        async function updateProducts() {
-            const userId = document.getElementById("userId").value;
-            const message = document.getElementById("message");
+async function saveChanges() {
+    const index = document.getElementById("editProductIndex").value;
+    const updatedData = {
+        name: document.getElementById("editName").value,
+        price: Number(document.getElementById("editPrice").value),
+        region: document.getElementById("editRegion").value,
+        city: document.getElementById("editCity").value,
+        state: document.getElementById("editState").value,
+        phone: document.getElementById("editPhone").value,
+    };
 
-            if (!userId) {
-                message.textContent = "يرجى إدخال ID المستخدم!";
-                return;
-            }
+    try {
+        productsData[index] = { ...productsData[index], ...updatedData };
+        await updateUserData();
+        renderProducts();
+        showSuccess("تم التحديث بنجاح!");
+        new bootstrap.Modal(document.getElementById("editModal")).hide();
+    } catch (error) {
+        handleError("حدث خطأ أثناء التحديث:", error);
+    }
+}
 
-            try {
-                let updatedProducts = userProducts.map((product, index) => ({
-                    id: product.id,
-                    name: document.getElementById(`name-${index}`).value,
-                    price: parseFloat(document.getElementById(`price-${index}`).value),
-                    state: document.getElementById(`state-${index}`).value,
-                    city: document.getElementById(`city-${index}`).value,
-                    area: document.getElementById(`area-${index}`).value,
-                    status: document.getElementById(`status-${index}`).value,
-                    type: document.getElementById(`type-${index}`).value
-                }));
+// وظائف مساعدة
+async function updateUserData() {
+    await fetch(`https://673a394a339a4ce445179ae7.mockapi.io/User/${currentUser.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ products: productsData })
+    });
+}
 
-                // إرسال البيانات المحدثة إلى API
-                const updateResponse = await fetch(`https://673a394a339a4ce445179ae7.mockapi.io/User/${userId}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ products: updatedProducts })
-                });
+function showSuccess(message) {
+    const alertDiv = document.createElement("div");
+    alertDiv.className = "alert alert-success alert-dismissible fade show fixed-top m-3";
+    alertDiv.role = "alert";
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.prepend(alertDiv);
+    setTimeout(() => alertDiv.remove(), 3000);
+}
 
-                if (updateResponse.ok) {
-                    message.textContent = "تم تحديث المنتجات بنجاح!";
-                } else {
-                    throw new Error("فشل في تحديث البيانات!");
-                }
-            } catch (error) {
-                message.textContent = `خطأ: ${error.message}`;
-            }
-        }
+function handleError(logMessage, error) {
+    console.error(logMessage, error);
+    const alertDiv = document.createElement("div");
+    alertDiv.className = "alert alert-danger alert-dismissible fade show fixed-top m-3";
+    alertDiv.role = "alert";
+    alertDiv.innerHTML = `
+        فشل في العملية! الرجاء المحاولة لاحقًا
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.prepend(alertDiv);
+    setTimeout(() => alertDiv.remove(), 3000);
+}
+
+function logout() {
+    localStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+}
+
+// تهيئة المستمعين للأحداث
+function initializeEventListeners() {
+    document.getElementById("editForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        saveChanges();
+    });
+}
     </script>
 </body>
 </html>
