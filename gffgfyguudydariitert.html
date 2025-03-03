@@ -79,19 +79,12 @@
                 // جلب المنتجات الحالية أو إنشاء قائمة جديدة
                 let products = userData.products || [];
 
-                // توليد ID نصي تلقائي
-                const ids = products.map(p => {
-                    // استخراج الأرقام من الid النصي (مثال: "prod-123" => 123)
-                    const numPart = p.id.replace(/\D/g, '');
-                    return parseInt(numPart) || 0;
-                });
-                
-                const maxId = ids.length > 0 ? Math.max(...ids) : 0;
-                const newProductId = `prod-${maxId + 1}`; // ID كنص (مثال: prod-1)
+                // توليد ID تلقائي للمنتج الجديد
+                const newProductId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
 
                 // إنشاء كائن المنتج الجديد
                 const newProduct = {
-                    id: newProductId,
+                    id: String(newProductId), // ID المنتج يتم توليده تلقائيًا
                     name: productName,
                     price: parseFloat(productPrice),
                     state: state,
@@ -105,7 +98,7 @@
                 // إضافة المنتج إلى القائمة
                 products.push(newProduct);
 
-                // تحديث بيانات المستخدم
+                // تحديث بيانات المستخدم مع المنتجات الجديدة
                 const updateResponse = await fetch(`https://673a394a339a4ce445179ae7.mockapi.io/User/${userId}`, {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
@@ -114,10 +107,6 @@
 
                 if (updateResponse.ok) {
                     message.textContent = "تمت إضافة المنتج بنجاح!";
-                    // إعادة تعيين الحقول
-                    document.querySelectorAll('input, select').forEach(element => {
-                        if (element.id !== 'status') element.value = '';
-                    });
                 } else {
                     throw new Error("فشل في تحديث البيانات!");
                 }
@@ -127,4 +116,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
