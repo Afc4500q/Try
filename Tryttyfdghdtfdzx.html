@@ -40,6 +40,11 @@
                     <div class="col-md-6">
                         <input type="password" class="form-control" id="pass" required placeholder="كلمة المرور">
                     </div>
+
+                    <div class="col-md-3">
+                        <input type="number" class="form-control" id="account" required placeholder="الرصيد">
+                    </div>
+                    
                     <div class="col-md-3">
                         <input type="number" class="form-control" id="total" required placeholder="المجموع">
                     </div>
@@ -123,6 +128,7 @@
                 name: document.getElementById('name').value,
                 user: document.getElementById('user').value,
                 pass: document.getElementById('pass').value,
+                account: document.getElementById('account').value,
                 total: document.getElementById('total').value,
                 pending: document.getElementById('pending').value,
                 successful: document.getElementById('successful').value,
@@ -154,6 +160,7 @@
                 document.getElementById('name').value = user.name;
                 document.getElementById('user').value = user.user;
                 document.getElementById('pass').value = user.pass;
+                document.getElementById('account').value = user.account;
                 document.getElementById('total').value = user.total;
                 document.getElementById('pending').value = user.pending;
                 document.getElementById('successful').value = user.successful;
